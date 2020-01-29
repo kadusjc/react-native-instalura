@@ -29,9 +29,7 @@ export default class Login extends Component {
             const token = response.text()
             await AsyncStorage.setItem('token', token)            
             await AsyncStorage.setItem('user', user)
-
-            this.props.navigation.navigate('Feed', { user })
-            this.props.navigator.push ({ screen: 'Feed', title: 'Instalura' })            
+            this.props.navigation.navigate('Feed')                
         } catch(error) {
             this.setState({mensagem: error.message})        
         } 
