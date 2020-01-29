@@ -1,35 +1,39 @@
 import React, { Component } from 'react'
-import { TextInput, View, Button, Text, AsyncStorage } from 'react-native'
+import { TextInput, View, Button, Text } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
 import LoginStyles from '../styles/login-styles'
 
 const loginUri = 'https://instalura-api.herokuapp.com/api/public/login'
 
 export default class Login extends Component {
-    static navigationOption = {
-        title: 'Login'
-    }
-
     constructor () {
         super()
         this.state = { login: '', senha: '', mensagem: '' }
     }
 
+    async doRequest (user, password) {
+        const requestInfo = { 
+            body: JSON.stringify({login: user, senha: password}), 
+            method: 'POST',
+            headers: new Headers({'Content-type': 'application/json'})
+        }
+
+        const response = await fetch(loginUri, requestInfo)
+        const responseJson = await response.text()
+        if (!responseJson) throw new Error('Não pude efetuar login maluko!')
+        return responseJson
+    }
+
     async doLogin () {
         try {
+            const {navigation} = this.props
             const {user, password} = this.state
-            const requestInfo = { 
-                body: JSON.stringify({login: user, senha: password}), 
-                method: 'POST',
-                headers: new Headers({'Content-type': 'application/json'})
-            }
-
-            const response = await fetch(loginUri, requestInfo)
-            if (!response.ok) throw new Error('Não pude efetuar login maluko!')
-
-            const token = response.text()
+            
+            const token = await this.doRequest(user, password)
+            console.warn('TOKEN ', token)
             await AsyncStorage.setItem('token', token)            
             await AsyncStorage.setItem('user', user)
-            this.props.navigation.navigate('Feed')                
+            return navigation.navigate('Feed')                
         } catch(error) {
             this.setState({mensagem: error.message})        
         } 
