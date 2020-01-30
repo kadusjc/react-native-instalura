@@ -1,12 +1,13 @@
 import React, { Component } from 'react'
 import { Text, View, Image, TouchableOpacity, TextInput } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage'
 import PostStyles from '../styles/post-styles'
 import { isEmpty, get } from 'lodash'
+
 
 const s2Empty = require('../../resources/images/s2Empty.png')
 const s2Filled = require('../../resources/images/s2Filled.png')
 const sendImg = require('../../resources/images/send.jpeg')
-const login = 'kadusjc1984'
 
 export default class Post extends Component {  
 
@@ -50,8 +51,10 @@ export default class Post extends Component {
     )
   }
 
-  onPhotoLike (photo) {
+  async onPhotoLike (photo) {
+    let login = await AsyncStorage.getItem('user')
     let likers = []    
+
     if (!photo.likeada) {
       likers = photo.likers.concat({login})
     } else {
@@ -61,8 +64,9 @@ export default class Post extends Component {
     this.setState({photo: updatedPhoto})
   }
 
-  onAddComment () {
+  async onAddComment () {
     if (isEmpty(get(this.state, 'commentValue'))) return
+    let login = await AsyncStorage.getItem('user')
 
     const commentsRepository = [...this.state.photo.comentarios]
     commentsRepository.push({id: this.state.commentValue, login, texto: this.state.commentValue})   
