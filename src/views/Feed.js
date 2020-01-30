@@ -1,8 +1,10 @@
-import React, { Component } from 'react';
-import { FlatList, StyleSheet, Platform, AsyncStorage } from 'react-native';
-import Post from '../components/Post'
+import React, { Component } from 'react'
+import { FlatList, StyleSheet, Platform } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage'
+import axios from 'axios'
 import { isEmpty, find } from 'lodash'
 
+import Post from '../components/Post'
 const photoEndpoint = 'https://instalura-api.herokuapp.com/api/public/fotos'
 
 export default class Feed extends Component {
@@ -14,14 +16,15 @@ export default class Feed extends Component {
 
   async componentDidMount () {
     try {
-      const token = await AsyncStorage.getItem('usuario')
-      const header = new Headers({'X-AUTH-TOKEN': token})
+      const token = await AsyncStorage.getItem('token')
+      const user = await AsyncStorage.getItem('user')
+      const requestConfig = {headers: {'X-AUTH-TOKEN': token}}
 
-      const res = await fetch(photoEndpoint, )
-      this.setState({pictures: res.json()})
-
+      const res = await axios(`${photoEndpoint}/${user}`, requestConfig)
+      this.setState({pictures: res.data})
+      
     } catch(error) {
-        console.warn('Não foi possível carregar as fotos: ' + e);
+        console.warn('Não foi possível carregar as fotos: ' + error);
         this.setState({status: 'ERRO'})
     }
   }
@@ -31,11 +34,11 @@ export default class Feed extends Component {
   }
 
   async onAddComment (idPicture, commentValue, newCommentInput) {
-    const login = await AsyncStorage.getItem('user')
+    const user = await AsyncStorage.getItem('user')
 
     if (isEmpty(commentValue)) return
     let targetPhoto = this.findPictureById(idPicture)
-    targetPhoto.comentarios.push({id: commentValue, login, texto: commentValue})
+    targetPhoto.comentarios.push({id: commentValue, login: user, texto: commentValue})
 
     const refreshPictures = this.state.pictures.map((pic) => {
       if (pic.id === idPicture) return targetPhoto

@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 import { TextInput, View, Button, Text } from 'react-native'
+import axios from 'axios'
+
 import AsyncStorage from '@react-native-community/async-storage';
 import LoginStyles from '../styles/login-styles'
 
@@ -8,32 +10,24 @@ const loginUri = 'https://instalura-api.herokuapp.com/api/public/login'
 export default class Login extends Component {
     constructor () {
         super()
-        this.state = { login: '', senha: '', mensagem: '' }
+        this.state = { user: '', password: '', mensagem: '' }
     }
 
-    async doRequest (user, password) {
-        const requestInfo = { 
-            body: JSON.stringify({login: user, senha: password}), 
-            method: 'POST',
-            headers: new Headers({'Content-type': 'application/json'})
-        }
-
-        const response = await fetch(loginUri, requestInfo)
-        const responseJson = await response.text()
-        if (!responseJson) throw new Error('Não pude efetuar login maluko!')
-        return responseJson
+    async doRequest (user, password) {        
+        const token = await axios.post(loginUri, {login: user, senha: password})
+        if (!token || !token.data) throw new Error('Não pude efetuar login maluko!')
+        return token.data
     }
 
     async doLogin () {
         try {
-            const {navigation} = this.props
+            const {navigate} = this.props.navigation
             const {user, password} = this.state
             
             const token = await this.doRequest(user, password)
-            console.warn('TOKEN ', token)
-            await AsyncStorage.setItem('token', token)            
+            await AsyncStorage.setItem('token',  token)            
             await AsyncStorage.setItem('user', user)
-            return navigation.navigate('Feed')                
+            return navigate('Feed')                
         } catch(error) {
             this.setState({mensagem: error.message})        
         } 
