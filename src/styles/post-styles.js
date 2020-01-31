@@ -32,12 +32,6 @@ module.exports = StyleSheet.create({
   comments: {
     flexDirection: 'row', 
   }, 
-  newComments: {
-    borderBottomColor: '#ddd',
-    borderBottomWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
   likes: {
     fontWeight: 'bold'
   },

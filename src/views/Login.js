@@ -1,32 +1,21 @@
 import React, { Component } from 'react'
 import { TextInput, View, Button, Text } from 'react-native'
-import axios from 'axios'
 
-import AsyncStorage from '@react-native-community/async-storage';
 import LoginStyles from '../styles/login-styles'
-
-const loginUri = 'https://instalura-api.herokuapp.com/api/public/login'
+import LoginService from '../services/login-service'
 
 export default class Login extends Component {
     constructor () {
         super()
+        this.loginService = new LoginService()
         this.state = { user: '', password: '', mensagem: '' }
-    }
-
-    async doRequest (user, password) {        
-        const token = await axios.post(loginUri, {login: user, senha: password})
-        if (!token || !token.data) throw new Error('Não pude efetuar login maluko!')
-        return token.data
     }
 
     async doLogin () {
         try {
             const {navigate} = this.props.navigation
-            const {user, password} = this.state
-            
-            const token = await this.doRequest(user, password)
-            await AsyncStorage.setItem('token',  token)            
-            await AsyncStorage.setItem('user', user)
+            const {user, password} = this.state            
+            await this.loginService.doLogin(user, password)
             return navigate('Feed')                
         } catch(error) {
             this.setState({mensagem: error.message})        
